@@ -12,22 +12,15 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
-    public Text playerName; //variable to store player name
-    public Text bestPlayerName; // variable to store best player upon getting high score
+
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
     
     private bool m_GameOver = false;
-    private static int bestScore;
-    private static string bestPlayer;
 
 
-    void Awake()
-    {
-        PlayerGameRank();
-    }
 
     // Start is called before the first frame update
     void Start()
@@ -46,10 +39,7 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
-
-        playerName.text = PlayerDataHandler.Instance.playerName;
-
-        BestPlayerSet();
+    
     }
 
     private void Update()
@@ -79,77 +69,14 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        PlayerDataHandler.Instance.score = m_Points;
         ScoreText.text = $"Score : {m_Points}";
     }
 
     public void GameOver()
     {
         m_GameOver = true;
-        BestPlayerCheck();
         GameOverText.SetActive(true);
         
     }
 
-    public void PlayerGameRank()
-    {
-        string path = Application.persistentDataPath + "savefile.json";
-        if (File.Exists(path))
-        {
-            string json = File.ReadAllText(path);
-            SaveData data = JsonUtility.FromJson<SaveData>(json);
-
-            bestPlayer = data.TheBestPlayer;
-            bestScore = data.HighestScore;
-        }
-    }
-
-    // condition to check and set score as best score and best player
-    private void BestPlayerCheck()
-    {
-        int gameScore = PlayerDataHandler.Instance.score;
-
-        if (gameScore > bestScore)
-        {
-            bestPlayer = PlayerDataHandler.Instance.playerName;
-            bestScore = gameScore;
-
-            bestPlayerName.text = $"Best Score : {bestPlayer}: {bestScore}";
-
-            SaveGameRank(bestPlayer, bestScore);
-        }
-    }
-
-    //here we check player againt player score and decide to save player name as best or not
-    private void BestPlayerSet()
-    {
-        if (bestPlayer == null && bestScore == 0)
-        {
-            bestPlayerName.text = "";
-        }
-        else
-        {
-            bestPlayerName.text = $"Best Score : {bestPlayer}: {bestScore}";
-        }
-    }
-
-    // here we check the player and score of game play and save
-    public void SaveGameRank(string nameOfBestPlayer, int playerWithBestScore)
-    {
-        SaveData data = new SaveData();
-
-        data.TheBestPlayer = nameOfBestPlayer;
-        data.HighestScore = playerWithBestScore;
-
-        string json = JsonUtility.ToJson(data);
-        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
-    }
-
-
-    [System.Serializable]
-    class SaveData
-    {
-        public int HighestScore;
-        public string TheBestPlayer;
-    }
 }
